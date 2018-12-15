@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include <libetpan/libetpan.h>
+#include <libetpan/mailsmtp_helper.h>
 
 #include "MCAddress.h"
 #include "MCMessageBuilder.h"

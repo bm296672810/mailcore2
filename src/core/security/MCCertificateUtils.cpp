@@ -120,7 +120,7 @@ err:
     }
     
 #ifdef _MSC_VER
-	HCERTSTORE systemStore = CertOpenSystemStore(NULL, L"ROOT");
+	HCERTSTORE systemStore = CertOpenSystemStore(NULL, "ROOT");
 
 	PCCERT_CONTEXT previousCert = NULL;
 	while (1) {

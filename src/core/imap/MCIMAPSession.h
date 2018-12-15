@@ -7,7 +7,7 @@
 #include <MailCore/MCIMAPMessage.h>
 
 #ifdef __cplusplus
-
+#pragma warning(disable : 4996)
 namespace mailcore {
     
     extern String * IMAPNamespacePersonal;
@@ -193,7 +193,7 @@ namespace mailcore {
         virtual bool isCompressionEnabled();
         virtual bool allowsNewPermanentFlags();
       
-        virtual String * gmailUserDisplayName() DEPRECATED_ATTRIBUTE;
+        DEPRECATED_ATTRIBUTE virtual String * gmailUserDisplayName() ;
         
         virtual void setConnectionLogger(ConnectionLogger * logger);
         virtual ConnectionLogger * connectionLogger();

@@ -15,7 +15,7 @@ namespace mailcore {
     
     class Data;
     class Array;
-    
+    int64_t getCurrentTime();
     class MAILCORE_EXPORT String : public Object {
     public:
         String(const UChar * unicodeChars = NULL);

@@ -1,4 +1,4 @@
-#include "MCWin32.h" // should be included first.
+﻿#include "MCWin32.h" // should be included first.
 
 #include "MCString.h"
 
@@ -42,6 +42,10 @@
 #include "MCIterator.h"
 #include "ConvertUTF.h"
 #include "MCLock.h"
+
+#ifdef _MSC_VER
+#include "sys/mman.h"
+#endif
 
 #if defined(_MSC_VER)
 #define PATH_SEPARATOR_CHAR '\\'
@@ -1457,9 +1461,26 @@ String * String::uuidString()
     uuid_unparse_lower(uuid, uuidString);
     return String::stringWithUTF8Characters(uuidString);
 }
+#else
+String * String::uuidString()
+{
+    char buffer[40];
+
+    sprintf_s(buffer, "%lld", getCurrentTime());
+
+    return String::stringWithUTF8Characters(buffer);
+}
 #endif
 
 #endif
+
+
+int64_t mailcore::getCurrentTime()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
 
 unsigned int String::replaceOccurrencesOfString(String * occurrence, String * replacement)
 {

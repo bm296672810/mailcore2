@@ -6,6 +6,7 @@ include(core)
 include(async)
 include(objc)
 include(LibFindMacros)
+include(findpath)
 
 IF(APPLE)
   execute_process(COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/get-mac.sh"
@@ -44,3 +45,4 @@ add_library(MailCore
   ${async_files}
   ${objc_files}
 )
+target_link_libraries(MailCore SHARED ${RELY_LIBS})

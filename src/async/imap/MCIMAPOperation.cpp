@@ -179,7 +179,9 @@ void IMAPOperation::beforeMain()
 void IMAPOperation::afterMain()
 {
     retain();
-    performMethodOnMainThread((Object::Method) &IMAPOperation::afterMainOnMainThread, NULL);
+#ifndef _MSC_VER
+    performMethodOnMainThread((Object::Method) &afterMainOnMainThread, NULL);
+#endif
 }
 
 void IMAPOperation::afterMainOnMainThread()

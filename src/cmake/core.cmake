@@ -35,7 +35,13 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   )
 ENDIF()
 
-
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set(basetype_files_windows
+        core/windows/sys/mman.c
+        core/basetypes/MCWin32.cpp
+        core/basetypes/MCMainThreadWin32.cpp
+    )
+ENDIF()
 set(basetypes_files
   core/basetypes/MCArray.cpp
   core/basetypes/MCAssert.c
@@ -155,6 +161,7 @@ set(zip_files
   core/zip/MiniZip/ioapi.c
   core/zip/MiniZip/unzip.c
   core/zip/MiniZip/zip.c
+  core/zip/MiniZip/iowin32.c
   ${zip_files_apple}
 )
 
@@ -174,6 +181,7 @@ set(core_files
   ${security_files}
   ${smtp_files}
   ${zip_files}
+  ${basetype_files_windows}
 )
 
 # Includes for build
@@ -193,4 +201,5 @@ set(core_includes
   "${CMAKE_CURRENT_SOURCE_DIR}/core/smtp"
   "${CMAKE_CURRENT_SOURCE_DIR}/core/zip"
   "${CMAKE_CURRENT_SOURCE_DIR}/core/zip/MiniZip"
+  "${CMAKE_CURRENT_SOURCE_DIR}/core/windows"
 )

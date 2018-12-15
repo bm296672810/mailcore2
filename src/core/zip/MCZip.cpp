@@ -81,16 +81,19 @@ static ErrorCode addFile(zipFile file, String * path)
         HANDLE hFind = INVALID_HANDLE_VALUE;
         WIN32_FIND_DATA ffd;
 
-        hFind = FindFirstFile(wildcard->unicodeCharacters(), &ffd);
+        hFind = FindFirstFile((char*)wildcard->unicodeCharacters(), &ffd);
         if (hFind == INVALID_HANDLE_VALUE)  {
             return ErrorFile;
         }
-
+        wchar_t wFileName[260];
+        int iSize = MultiByteToWideChar(CP_ACP, 0, ffd.cFileName, -1, NULL, 0);
+        wchar_t* pwszUnicode = (wchar_t *)malloc(iSize * sizeof(wchar_t));
+        MultiByteToWideChar(CP_ACP, 0, ffd.cFileName, -1, pwszUnicode, iSize);
         do {
-            if ((wcscmp(ffd.cFileName, L".") == 0) || (wcscmp(ffd.cFileName, L"..") == 0)) {
+            if ((wcscmp(pwszUnicode, L".") == 0) || (wcscmp(pwszUnicode, L"..") == 0)) {
                 continue;
             }
-            String * subpath = path->stringByAppendingPathComponent(String::stringWithCharacters(ffd.cFileName));
+            String * subpath = path->stringByAppendingPathComponent(String::stringWithCharacters(pwszUnicode));
             addFile(file, subpath);
         }
         while (FindNextFile(hFind, &ffd) != 0);
