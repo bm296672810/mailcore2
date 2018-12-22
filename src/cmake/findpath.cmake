@@ -1,3 +1,67 @@
+# find lib directory
+# find the absolute path of ${LIBNAME} from ${FINDPATH}
+# and store the result to ${${LIBNAME} before the last dot parts and toupper}_LIBRARY 
+macro(my_libfind LIBNAME FINDPATH)
+
+string(FIND ${LIBNAME} "." FIND_OUT)
+message("FIND_OUT:${FIND_OUT}")
+if(${FIND_OUT} EQUAL -1)
+    string(TOUPPER ${LIBNAME} U_LIBNAME)
+    set(FIND_LIB_NAME ${U_LIBNAME}_LIBRARY)
+else()
+    string(SUBSTRING ${LIBNAME} 0 ${FIND_OUT} TMP)
+    string(TOUPPER ${TMP} U_LIBNAME)
+    set(FIND_LIB_NAME ${U_LIBNAME}_LIBRARY)
+    
+endif()
+message("FIND_LIB_NAME:${FIND_LIB_NAME}")
+find_library(${FIND_LIB_NAME} 
+    NAMES ${LIBNAME}
+    PATHS ${FINDPATH}
+)
+
+if(NOT ${FIND_LIB_NAME})
+    message(FATAL_ERROR "ERROR: Could not find ${LIBNAME}")
+else()
+    message(STATUS "Found ${LIBNAME}")
+endif()
+
+endmacro(my_libfind)
+
+# find the include directory
+# if ${DIR_PREFIX} is NULL_PRE store the result into ${${filename} before of the last dot and toupper}_INCLUDE_DIR
+# if ${DIR_PREFIX} is not NULL_PRE store the result into ${${DIR_PREFIX} toupper}_INCLUDE_DIR
+# ${FINDPATH} the find directorys
+# ${DIR_PREFIX} Relative to ${CMAKE_CURRENT_SOURCE_DIR} child directory name
+macro(my_find_path filename FINDPATH DIR_PREFIX)
+if(${DIR_PREFIX} STREQUAL  "NULL_PRE")
+    message("NULL_PRE")
+
+    set(FIND_NAMES ${filename})
+    string(REGEX MATCH "[^\\<>\*\|\?:\/]*(\.)" TMP ${filename})
+    string(REGEX MATCH "[^\.]*" PRE_FILENAME ${TMP})
+    message("TMP:${TMP},PRE_FILENAME:${PRE_FILENAME}")
+    string(TOUPPER ${PRE_FILENAME} DEST_NAME)
+else()
+    string(TOUPPER ${DIR_PREFIX} DEST_NAME)
+    set(FIND_NAMES "${DIR_PREFIX}/${filename}")
+endif()
+message("FIND_NAMES:${FIND_NAMES}")
+# string(TOUPPER ${DIR_PREFIX} DEST_NAME)
+
+set(RESULT_FIND ${DEST_NAME}_INCLUDE_DIR)
+find_path(${RESULT_FIND}
+    NAMES ${FIND_NAMES}
+    PATHS ${FINDPATH}
+)
+if(NOT ${RESULT_FIND})
+    message(FATAL_ERROR "ERROR: Could not find the path of ${filename}")
+else()
+    message(STATUS "Found the path of ${filename}")
+endif()
+
+endmacro(my_find_path)
+
 IF(APPLE)
   set(CMAKE_CXX__FLAGS "-std=c++11 -stdlib=libc++")
   set(CMAKE_EXE_LINKER_FLAGS "-lc++ -stdlib=libc++")
@@ -58,11 +122,29 @@ if(NOT APPLE)
     NAMES unicode/utf8.h
     PATHS ${additional_includes}
   )
-  find_library(ICU4C_LIBRARY
-    NAMES icudata icui18n icuio icule iculx icutest icutu icuuc
-    PATHS ${additional_lib_searchpath}
+  
+  my_libfind(icudt ${additional_lib_searchpath})
+  my_libfind(icuin ${additional_lib_searchpath})
+  my_libfind(icuio ${additional_lib_searchpath})
+  my_libfind(icule ${additional_lib_searchpath})
+  my_libfind(iculx ${additional_lib_searchpath})
+  my_libfind(icutu ${additional_lib_searchpath})
+  my_libfind(icuuc ${additional_lib_searchpath})
+  
+  set(ICU4C_LIBRARY
+  ${ICUDT_LIBRARY}
+  ${ICUIN_LIBRARY}
+  ${ICUIO_LIBRARY}
+  ${ICULE_LIBRARY}
+  ${ICULX_LIBRARY}
+  ${ICUTU_LIBRARY}
+  ${ICUUC_LIBRARY}
   )
-
+  # find_library(ICU4C_LIBRARY
+    # NAMES icudt.lib icuin.lib icuio.lib icule.lib iculx.lib icutu.lib icuuc.lib
+    # PATHS ${additional_lib_searchpath}
+  # )
+  message(STATUS "ICU4C_LIBRARY:${ICU4C_LIBRARY}")
   if(NOT ICU4C_INCLUDE_DIR OR NOT ICU4C_LIBRARY)
     message(FATAL_ERROR "ERROR: Could not find icu4c")
   else()
@@ -74,16 +156,12 @@ endif()
 IF(ANDROID)
   message(STATUS "Android platform")
 ELSE()
-find_path(CTEMPLATE_INCLUDE_DIR
-  NAMES ctemplate/template.h
-  PATHS ${additional_includes}
-)
-find_library(CTEMPLATE_LIBRARY
-  NAMES libctemplate.lib
-  PATHS ${additional_lib_searchpath}
-)
 
-if(NOT CTEMPLATE_INCLUDE_DIR OR NOT CTEMPLATE_LIBRARY)
+my_find_path(template.h ${additional_includes} ctemplate)
+
+my_libfind(libctemplate.lib ${additional_lib_searchpath})
+
+if(NOT CTEMPLATE_INCLUDE_DIR OR NOT LIBCTEMPLATE_LIBRARY)
   message(FATAL_ERROR "ERROR: Could not find ctemplate")
 else()
   message(STATUS "Found ctemplate")
@@ -92,14 +170,9 @@ endif()
 
 # detect libetpan
 
-find_path(LIBETPAN_INCLUDE_DIR
-  NAMES libetpan/libetpan.h
-  PATHS ${additional_includes}
-)
-find_library(LIBETPAN_LIBRARY
-  NAMES libetpan.lib
-  PATHS ${additional_lib_searchpath}
-)
+my_find_path(libetpan.h ${additional_includes} libetpan)
+
+my_libfind(libetpan ${additional_lib_searchpath})
 
 if(NOT LIBETPAN_INCLUDE_DIR OR NOT LIBETPAN_LIBRARY)
   message(FATAL_ERROR "ERROR: Could not find libetpan")
@@ -110,16 +183,12 @@ endif()
 
 # detect tidy
 
-find_path(TIDY_INCLUDE_DIR
-  NAMES tidy.h
-  PATHS ${additional_includes}
-)
-find_library(TIDY_LIBRARY
-  NAMES libtidy.lib
-  PATHS ${additional_lib_searchpath}
-)
+my_find_path(tidy.h ${additional_includes} NULL_PRE)
+message("TIDY_INCLUDE_DIR:${TIDY_INCLUDE_DIR}")
+my_libfind(libtidy.lib ${additional_lib_searchpath})
+message("LIBTIDY_LIBRARY:${LIBTIDY_LIBRARY}")
 
-if(NOT TIDY_INCLUDE_DIR OR NOT TIDY_LIBRARY)
+if(NOT TIDY_INCLUDE_DIR OR NOT LIBTIDY_LIBRARY)
   message(FATAL_ERROR "ERROR: Could not find tidy")
 else()
   message(STATUS "Found tidy")
@@ -145,16 +214,9 @@ endif()
 
 # detect libxml2
 
-find_path(LIBXML_INCLUDE_DIR
-  NAMES libxml/xmlreader.h
-  PATHS ${additional_includes}
-)
-find_library(LIBXML_LIBRARY
-  NAMES libxml2.lib
-  PATHS ${additional_lib_searchpath}
-)
-
-if(NOT LIBXML_INCLUDE_DIR OR NOT LIBXML_LIBRARY)
+my_find_path(xmlreader.h ${additional_includes} libxml)
+my_libfind(libxml2.lib ${additional_lib_searchpath})
+if(NOT LIBXML_INCLUDE_DIR OR NOT LIBXML2_LIBRARY)
   message(FATAL_ERROR "ERROR: Could not find libxml2")
 else()
   message(STATUS "Found libxml2")
@@ -163,15 +225,8 @@ endif()
 
 # detect zlib
 
-find_path(ZLIB_INCLUDE_DIR
-  NAMES zlib.h
-  PATHS ${additional_includes}
-)
-find_library(ZLIB_LIBRARY
-  NAMES zlib.lib
-  PATHS ${additional_lib_searchpath}
-)
-
+my_find_path(zlib.h ${additional_includes} NULL_PRE)
+my_libfind(zlib.lib ${additional_lib_searchpath})
 if(NOT ZLIB_INCLUDE_DIR OR NOT ZLIB_LIBRARY)
   message(FATAL_ERROR "ERROR: Could not find zlib")
 else()
@@ -181,13 +236,29 @@ endif()
 ENDIF() # Android platform
 
 if(WIN32)
+my_libfind(libeay32MD.lib ${additional_lib_searchpath})
+my_libfind(libetpan.lib ${additional_lib_searchpath})
+my_libfind(libsasl2.lib ${additional_lib_searchpath})
+my_libfind(ssleay32MD.lib ${additional_lib_searchpath})
+my_libfind(pthreadVC2.lib "${additional_lib_searchpath}/x86")
+endif()
+
+if(WIN32)
 set(RELY_LIBS
     "${ICU4C_LIBRARY}"
-    "${CTEMPLATE_LIBRARY}"
+    "${LIBCTEMPLATE_LIBRARY}"
     "${LIBETPAN_LIBRARY}"
-    "${TIDY_LIBRARY}"
-    "${LIBXML_LIBRARY}"
+    "${LIBTIDY_LIBRARY}"
+    "${LIBXML2_LIBRARY}"
     "${ZLIB_LIBRARY}"
+    "${LIBEAY32MD_LIBRARY}"
+    "${LIBSASL2_LIBRARY}"
+    "${SSLEAY32DB_LIBRARY}"
+    "${PTHREADVC2_LIBRARY}"
+    Ws2_32.lib
+    Crypt32.lib
 )
+message(STATUS "ZLIB_LIBRARY:${ZLIB_LIBRARY}")
+message(STATUS "find_file RELY_LIBS:${RELY_LIBS}")
 # target_link_libraries(${PROJECT_NAME} ${OTHER_LINK_FLAGS} ${RELY_LIBS})
 endif()

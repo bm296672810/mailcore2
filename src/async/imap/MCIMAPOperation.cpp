@@ -179,12 +179,10 @@ void IMAPOperation::beforeMain()
 void IMAPOperation::afterMain()
 {
     retain();
-#ifndef _MSC_VER
-    performMethodOnMainThread((Object::Method) &afterMainOnMainThread, NULL);
-#endif
+    performMethodOnMainThread((Object::Method) &IMAPOperation::afterMainOnMainThread, NULL);
 }
 
-void IMAPOperation::afterMainOnMainThread()
+void IMAPOperation::afterMainOnMainThread(void * nouse)
 {
     if (mSession->session()->isAutomaticConfigurationDone()) {
         mSession->owner()->automaticConfigurationDone(mSession->session());

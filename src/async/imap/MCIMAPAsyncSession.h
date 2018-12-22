@@ -108,14 +108,7 @@ namespace mailcore {
         virtual IMAPIdentity * clientIdentity();
         virtual void setClientIdentity(IMAPIdentity * clientIdentity);
 
-#if defined(_MSC_VER) 
-        DEPRECATED_ATTRIBUTE
-#endif 
-        virtual String * gmailUserDisplayName()
-#ifndef _MSC_VER
-            DEPRECATED_ATTRIBUTE
-#endif
-            ;
+        virtual String * gmailUserDisplayName() DEPRECATED_ATTRIBUTE;
 
         virtual bool isIdleEnabled();
         

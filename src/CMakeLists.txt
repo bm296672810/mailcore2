@@ -40,9 +40,11 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/include"
   ${GLIB2_INCLUDE_DIRS}
 )
 
-add_library(MailCore
+add_library(MailCore SHARED
   ${core_files}
   ${async_files}
   ${objc_files}
 )
-target_link_libraries(MailCore SHARED ${RELY_LIBS})
+
+message(STATUS "RELY_LIBS:${RELY_LIBS}")
+target_link_libraries(MailCore ${RELY_LIBS})

@@ -11,18 +11,6 @@ set(MY_DEFINE_MACRO
 )
 add_definitions(${MY_DEFINE_MACRO})
 
-if(WIN32)
-set(RELY_LIBS
-    "-l${ICU4C_LIBRARY}"
-    "-l${CTEMPLATE_LIBRARY}"
-    "-l${LIBETPAN_LIBRARY}"
-    "-l${TIDY_LIBRARY}"
-    "-l${LIBXML_LIBRARY}"
-    "-l${ZLIB_LIBRARY}"
-)
-# target_link_libraries(${PROJECT_NAME} ${OTHER_LINK_FLAGS} ${RELY_LIBS})
-endif()
-
 add_subdirectory (src)
 add_subdirectory (tests)
 add_subdirectory (unittest)
